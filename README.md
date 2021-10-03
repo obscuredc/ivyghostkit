@@ -1,4 +1,4 @@
-https://obscuredc.github.io/ivyghostkit/.html
+https://obscuredc.github.io/ivyghostkit/ghostkit.html
 # ivyghostkit
 another terminal project
 
