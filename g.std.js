@@ -88,5 +88,5 @@ _ADDCOMMAND(new _COMMAND("time", function (p) {
     //get time
     var d = new Date();
     Message.sendSystem(_TYPINGCURRENT);
-    Message.out.nom(`${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}@${d.getHours() < 24 ? (d.getHours() - 12) + "PM" : d.getHours() + "AM" }:${d.getMinutes()}.${d.getSeconds()}`);
+    Message.out.nom(`${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}@${d.getHours() <= 12 ? d.getHours() + "AM" : (d.getHours() - 12) + "PM"}:${d.getMinutes()}.${d.getSeconds()}`);
 }))
