@@ -109,6 +109,7 @@ document.addEventListener("keydown", function (event) {
 })
 
 /** Command Executor */
+_EXECUTIONLOG = [];
 class _COMMAND {
     constructor(id, onexec) {
         this.id=id;
@@ -149,8 +150,8 @@ function _PARSECOMMAND(_STRRAW) {
     }
 }
 function _EXECUTECOMMAND(raw) {
+    _EXECUTIONLOG.push(raw);
     var f = _PARSECOMMAND(raw);
-    console.log(f);
     if(_COMMANDBYID(f.cmd) != false || undefined) {
         _COMMANDBYID(f.cmd).execute(f.params);
     } else {
