@@ -59,7 +59,7 @@ _ADDCOMMAND(new _COMMAND("info", function(p) {
     try {
         if(!_SYSTEMPATH == "" && _FILEFROMPATH() != false) {
             Message.out.nom(`Type: ${_FILEFROMPATH().type},<br>
-            Name: ${_FILEFROMPATH().id}
+            Name: ${_FILEFROMPATH().id},<br>length: ${_FILEFROMPATH().content.length}
             `, "normal");
         } else {
             Message.out.error("cannot get info of empty file!");
@@ -70,7 +70,7 @@ _ADDCOMMAND(new _COMMAND("info", function(p) {
 }))
 _ADDCOMMAND(new _COMMAND("out", function(p) {
     Message.sendSystem(_TYPINGCURRENT);
-    Message.out.nom(p.join(""));
+    Message.out.nom(p.join(","));
 }))
 _ADDCOMMAND(new _COMMAND("version", function(p) {
     Message.sendSystem(_TYPINGCURRENT);
@@ -88,5 +88,36 @@ _ADDCOMMAND(new _COMMAND("time", function (p) {
     //get time
     var d = new Date();
     Message.sendSystem(_TYPINGCURRENT);
-    Message.out.nom(`${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}@${d.getHours() <= 12 ? d.getHours() + "AM" : (d.getHours() - 12) + "PM"}:${d.getMinutes()}.${d.getSeconds()}`);
+    Message.out.nom(`${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}@${d.getHours() <= 12 ? d.getHours() + "AM" : d.getHours() - 12 + "PM" }:${d.getMinutes()}.${d.getSeconds()}`);
+}))
+_ADDCOMMAND(new _COMMAND("efile", function(p) {
+    Message.sendSystem(_TYPINGCURRENT);
+    try {
+        if(!_SYSTEMPATH == "" && _FILEFROMPATH() == false ? false : _FILEFROMPATH().type == "txt") {
+            FileSystem[_SYSTEMPATH].content = p.join(",");
+            Message.out.nom("changed documents text", "normal");
+        } else {
+            Message.out.error("cannot edit empty file!");
+        }
+    } catch {
+        Message.out.error(`invalid file!`);
+    }
+}))
+_ADDCOMMAND(new _COMMAND("listfile", function(p) {
+    Message.sendSystem(_TYPINGCURRENT);
+    //lists all files and their infos
+    Message.out.nom("finding files", "special")
+    if(FileSystem.discoverProps.length !=0) {
+        for(i3=0;i3<FileSystem.discoverProps.length;i3++) {
+           var t = FileSystem[FileSystem.discoverProps[i3]];
+           Message.out.nom(`found \`${t.id}\`:`, "warn");
+           Message.out.nom(`name: ${t.id},<br>type: ${t.type},<br>length: ${t.content.length}`);
+        }
+    } else {
+        Message.out.nom("there are no files", "t warn");
+    }
+}))
+_ADDCOMMAND(new _COMMAND("exelog", function(p) {
+    Message.sendSystem(_TYPINGCURRENT);
+    Message.out.nom(_EXECUTIONLOG.join("<br>"), "normal");
 }))
