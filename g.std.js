@@ -130,11 +130,15 @@ _ADDCOMMAND(new _COMMAND("listfile", function(p) {
     if(FileSystem.discoverProps.length !=0) {
         for(i3=0;i3<FileSystem.discoverProps.length;i3++) {
            var t = FileSystem[FileSystem.discoverProps[i3]];
-           Message.out.nom(`found \`${t.id}\`:`, "warn");
-           Message.out.nom(`name: ${t.id},<br>type: ${t.type},<br>length: ${t.content.length}`);
+           try {
+                Message.out.nom(`found \`${t.id}\`:`, "warn");
+                Message.out.nom(`name: ${t.id},<br>type: ${t.type},<br>length: ${t.content.length}`);
+           } catch {
+               Message.out.nom(`found deleted file`, "warn");
+           }
         }
     } else {
-        Message.out.nom("there are no files", "t warn");
+        Message.out.nom("there are no files", "warn");
     }
 }))
 _ADDCOMMAND(new _COMMAND("exelog", function(p) {
