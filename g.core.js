@@ -2,6 +2,8 @@ _SYSTEMVERSION = "ivy ghostkit 100";
 _SYSTEMDIST = "standard";
 _AUTHORS = ["obscuredc"];
 
+/** useful stuff */
+var ACCEPTCHAR = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 /** IO SECTION + UI */
 var IO = {
     out: document.getElementById("IO-out")
@@ -107,7 +109,34 @@ document.addEventListener("keydown", function (event) {
             }
     }
 })
-
+/** variable framework */
+var _VARIABLES = {
+    PROPS: []
+}
+var VTYPES = {
+    CONSTANT: "variablejsconstanttype",
+    NORMAL: "variablejsnormaltype"
+}
+class _VARIABLE {
+    constructor(ID, VALUE, TYPE)  {
+        this.TYPE = TYPE;
+        this.ID = ID;
+        this.VALUE = VALUE;
+    }
+}
+function _ADDVARIABLE(_v) {
+    //v instanceof _VARIABLE
+    _VARIABLES.PROPS.push(_v.ID);
+    _VARIABLES[_v.ID] = _v;
+}
+function _GETVARIABLE(_id) {
+    // if(_VARIABLES.PROPS.includes(_id)) {
+    //     return _VARIABLES[_id];
+    // } else {
+    //     return false;
+    // }
+    return _id == "" || _VARIABLES[_id] == undefined ? false : _VARIABLES[_id];
+}
 /** Command Executor */
 _EXECUTIONLOG = [];
 class _COMMAND {
@@ -137,21 +166,47 @@ function _ADDCOMMAND(c) {
 function _PARSECOMMAND(_STRRAW) {
     /** expect: COMMAND*PARAM1,PARAM2... */
     var s=_STRRAW.split("*");
-    if(s[1]) {
+    var cmd=s[0];
+    try {
+        var params=s[1].split(",");
+        params = params.map((e) => {
+            if(ACCEPTCHAR.includes(e[0])) {
+                //lmao its a normal string val
+                return e;
+            } else if (e[0] == "$") {
+                //looks like we're trying to access a variable, huh.
+                var varName=e.substring(1,e.length);
+                console.error(varName);
+                return _GETVARIABLE(varName) == false ? "" : _GETVARIABLE(varName).VALUE;
+            }
+        });
+
         return {
-            cmd:s[0],
-            params:s[1].split(",")
+            cmd: cmd,
+            params: params
         }
-    } else {
+    } catch {
         return {
-            cmd:s[0],
-            params:[]
+            cmd: cmd,
+            params: []
         }
     }
+    // if(s[1]) {
+    //     return {
+    //         cmd:s[0],
+    //         params:s[1].split(",")
+    //     }
+    // } else {
+    //     return {
+    //         cmd:s[0],
+    //         params:[]
+    //     }
+    // }
 }
 function _EXECUTECOMMAND(raw) {
     _EXECUTIONLOG.push(raw);
     var f = _PARSECOMMAND(raw);
+    console.log(f);
     if(_COMMANDBYID(f.cmd) != false || undefined) {
         _COMMANDBYID(f.cmd).execute(f.params);
     } else {
@@ -160,11 +215,13 @@ function _EXECUTECOMMAND(raw) {
         Message.out.nom(`invalid cmd \`${f.cmd}\``, "error");
     }
 }
-
 //onstart
 _SYSTEMPATH = "";
 _SYSTEMAPPLICATION = "native";
 //render block for typing
 _UPDATEKEYBOARD();
 
-Message.sendSystem("welcome to the ivy ghostkit!");
+function _LOADAFTERBOOT() {
+    Message.raw(`<img src="favicon.png" id="ivyghostkitlogo" />`);
+    Message.sendSystem("welcome to the ivy ghostkit!");
+}
