@@ -65,6 +65,9 @@ var _SYSTEMPATH, _SYSTEMAPPLICATION = "";
 function _FILEFROMPATH() {
     return _SYSTEMPATH == "" && FileSystem[_SYSTEMPATH] != undefined ? false : FileSystem[_SYSTEMPATH];
 }
+function _GETFILE(_id) {
+    return _id == "" || FileSystem[_id] == undefined ? false : FileSystem[_id];
+}
 function _SYSTEMATTRCHANGE(path, app) {
     _SYSTEMPATH = path;
     _SYSTEMAPPLICATION = app;
@@ -139,6 +142,7 @@ function _GETVARIABLE(_id) {
 }
 /** Command Executor */
 _EXECUTIONLOG = [];
+var _PARSECOMMANDSPLITTER = "*";
 class _COMMAND {
     constructor(id, onexec) {
         this.id=id;
@@ -165,10 +169,18 @@ function _ADDCOMMAND(c) {
 }
 function _PARSECOMMAND(_STRRAW) {
     /** expect: COMMAND*PARAM1,PARAM2... */
-    var s=_STRRAW.split("*");
+    var s=_STRRAW.split(_PARSECOMMANDSPLITTER);
     var cmd=s[0];
     try {
-        var params=s[1].split(",");
+        var p_l ="";
+        for(i=1;i<s.length;i++) {
+            p_l+=s[i];
+        }
+        var params=p_l.split(",");
+        //get all except first
+        //var params=s.slice(1, s.length);
+        //splitting
+        //params.split(",");
         params = params.map((e) => {
             if(ACCEPTCHAR.includes(e[0])) {
                 //lmao its a normal string val
@@ -178,6 +190,11 @@ function _PARSECOMMAND(_STRRAW) {
                 var varName=e.substring(1,e.length);
                 console.error(varName);
                 return _GETVARIABLE(varName) == false ? "" : _GETVARIABLE(varName).VALUE;
+            } else if (e[0] == "@") {
+                //file access
+                var fileName=e.substring(1,e.length);
+                console.error(fileName);
+                return _GETFILE(fileName) == false ? "" : _GETFILE(fileName).content;
             }
         });
 
