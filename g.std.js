@@ -123,6 +123,33 @@ _ADDCOMMAND(new _COMMAND("efile", function(p) {
         Message.out.error(`invalid file!`);
     }
 }))
+_ADDCOMMAND(new _COMMAND("afile", function(p) {
+    Message.sendSystem(_TYPINGCURRENT);
+    try {
+        if(!_SYSTEMPATH == "" && _FILEFROMPATH() == false ? false : _FILEFROMPATH().type == "txt") {
+            FileSystem[_SYSTEMPATH].content += p.join(",");
+            Message.out.nom("changed documents text", "normal");
+        } else {
+            Message.out.error("cannot edit empty file!");
+        }
+    } catch {
+        Message.out.error(`invalid file!`);
+    }
+}))
+_ADDCOMMAND(new _COMMAND("bfile", function(p) {
+    Message.sendSystem(_TYPINGCURRENT);
+    try {
+        if(!_SYSTEMPATH == "" && _FILEFROMPATH() == false ? false : _FILEFROMPATH().type == "txt") {
+            FileSystem[_SYSTEMPATH].content = p.join(",") + FileSystem[_SYSTEMPATH];
+            Message.out.nom("changed documents text", "normal");
+        } else {
+            Message.out.error("cannot edit empty file!");
+        }
+    } catch {
+        Message.out.error(`invalid file!`);
+    }
+}))
+
 _ADDCOMMAND(new _COMMAND("listfile", function(p) {
     Message.sendSystem(_TYPINGCURRENT);
     //lists all files and their infos
@@ -177,68 +204,38 @@ _ADDCOMMAND(new _COMMAND("open macro", function(p) {
     } 
     _SYSTEMATTRCHANGE(_SYSTEMPATH, "native");
 }));
-
-/** OS COMMANDS */
-_ALLOWOSCOMMAND = false;
-function _ALLOWOSCOMMANDPERMCHANGE() {
-    /** add all commands here */
-    if(_ALLOWOSCOMMAND == true) {
-        _ADDCOMMAND(new _COMMAND("link", function(p) {
-            Message.sendSystem(_TYPINGCURRENT);
-            var file= p[0];
-            var linker = p[1];
-            try {
-                _SYSMESSAGE= false;
-                eval(`
-            _ADDCOMMAND(new _COMMAND(linker, function(p) {
-                   _EXECUTECOMMAND("cd");
-                   _EXECUTECOMMAND("cd*" + FileSystem[file].id);
-                _EXECUTECOMMAND("open macro");
-               }))
-               `);
-            _SYSMESSAGE = true;
-            } catch {
-               Message.out.error("something went wrong during linking.");
-            }
-        }));
-    }
-}
-function _BOOLEANSALVAGE(s) {
-    if(s == "true") return true;
-    if(s == "false") return false;
-    if(s) return false;
-}
-_ADDCOMMAND(new _COMMAND("sys", function(p) {
-    //change a system variable
+/** DLLs and Macros are the same except for the seperator: this is so DLL files can create Macro files */
+/** DLL example:
+ *  out<Starting;cd;out<Ending
+ */
+_ADDCOMMAND(new _COMMAND("open dll", function(p) {
+    _SYSTEMATTRCHANGE(_SYSTEMPATH, "dll");
     Message.sendSystem(_TYPINGCURRENT);
-    var m = p[0];
-    switch(m) {
-        case "_ALLOW_OS_COMMAND":
-            _ALLOWOSCOMMAND = _BOOLEANSALVAGE(m);
-            _ALLOWOSCOMMANDPERMCHANGE();
-            Message.out.nom("set `_ALLOW_OS_COMMAND` to value");
-            break;
-    }
-}))
-
+    _TYPINGCURRENT = "";
+    _UPDATEKEYBOARD();
+    if(_FILEFROMPATH() != false && _FILEFROMPATH() != undefined ? _FILEFROMPATH().type == "dll" : false) {
+        var list=_FILEFROMPATH().content.split(";");
+        //diable system messages during execution
+        _SYSMESSAGE = false;
+        _PARSECOMMANDSPLITTER = "<";
+        for(i2=0;i2<list.length;i2++) {
+            _EXECUTECOMMAND(list[i2]);
+        }
+        //allow system messages again
+        _SYSMESSAGE = true;
+        //reset to defaults
+        _PARSECOMMANDSPLITTER = "*";
+    } else {
+        Message.out.error("dll: found invalid file");
+    } 
+    _SYSTEMATTRCHANGE(_SYSTEMPATH, "native");
+}));
 //whatever you put down here will be executed in the terminal from the start as a macro
-_OSBOOTPAYLOAD = `cfile*cout,txt`;
-
+var _OSBOOTPAYLOAD;
+//this file runs the terminal and all setup commands.
 /** stuff to do on load. */
-/** btw file _OSBOOTLOAD is essential or smth */
-_FILESYSTEMADD(new file("_OSBOOTLOAD", _OSBOOTPAYLOAD, "sys"));
-_SYSMESSAGE = false;
-/** painfully run the osboot */
-_EXECUTECOMMAND("cd"); //ensure highest dir
-_EXECUTECOMMAND("cd*_OSBOOTLOAD"); //goto _OSBOOTLOAD
-_EXECUTECOMMAND("retype*macro"); //switch to macro preexecution
-_EXECUTECOMMAND("open macro"); //run it
-_SYSMESSAGE = false; //macro tries to set back to true, screw that
-_EXECUTECOMMAND("cd"); //ensure macro didnt screw anything up
-_EXECUTECOMMAND("cd*_OSBOOTLOAD"); //try to nav to it
-//these are for clean up
-_EXECUTECOMMAND("del"); //del file (optional)
-_EXECUTECOMMAND("clr"); //remove logging
-_SYSMESSAGE = true; //enable messages again
+
+_ADDVARIABLE(new _VARIABLE("_SYSTEMVERSION", _SYSTEMVERSION, VTYPES.CONSTANT));
+_ADDVARIABLE(new _VARIABLE("_SYSTEMDIST", _SYSTEMDIST, VTYPES.CONSTANT));
 
 _LOADAFTERBOOT(); //show welcome message & img
